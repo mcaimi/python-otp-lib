@@ -12,6 +12,7 @@ except ImportError as e:
 
 # constants
 DBC_LEN = 4
+MODULO_VALUES = [ 10, 100, 1000, 10000, 10000, 1000000, 10000000, 100000000 ]
 
 # Dynamic Truncate function, as per RFC4226
 def DT(hmac_hash):
@@ -30,7 +31,7 @@ def DT(hmac_hash):
 def modulo(byte_string, exponent=6):
     # generate 6 digit HOTP code
     # (32bit value) mod 10^x where x is the code length
-    mv = math.pow(10,exponent)
+    mv = MODULO_VALUES[exponent - 1]
 
     # unpack 4 bytes value into a 32bit integer
     # unpack returns a tuple, get first value
@@ -41,12 +42,15 @@ def modulo(byte_string, exponent=6):
     return int(bv % mv)
 
 # compute HOTP token as per RFC 4226
-def HOTP(key, message, digest=hashlib.sha1):
+def HOTP(key, interval, digest=hashlib.sha1):
+    # encode interval as unsigned int
+    interval = interval if (isinstance(interval, bytes)) else struct.pack(">Q", interval)
+
     # compute HMAC-SHA-1 digest (20 bytes)
-    hmac_hash = hmac.HMAC(key, message, digest_function=digest)
+    hmac_hash = hmac.HMAC(key, interval, digest_function=digest)
 
     # compute Dynamic Truncation on the hmac value
     hotp = DT(hmac_hash)
 
     # return hotp value
-    return modulo(hotp)
+    return hotp
