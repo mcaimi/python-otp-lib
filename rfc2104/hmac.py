@@ -20,7 +20,7 @@ def HMAC(key, message, digest_function=hashes.sha1):
     # HMAC IS:
     #   H(key XOR OUTER_PAD, H(key XOR INNER_PAD, message))
 
-    # check key length
+    # check input type (must be UTF-8 encoded byte strings)
     key = str2unicode(key)
     message = str2unicode(message)
 
