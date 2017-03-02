@@ -18,7 +18,7 @@ TS = 30
 
 # strip whitespaces from key if any is present
 def normalize(key):
-    return key.replace(' ', '')
+    return key.replace(' ', '') if isinstance(key, str) else key.replace(b' ', b'')
 
 # generate TOTP Token as per RFC 6238
 def TOTP(key, digest=hashlib.sha1, timestep=TS):

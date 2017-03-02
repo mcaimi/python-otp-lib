@@ -12,7 +12,8 @@ except ImportError as e:
 
 # constants
 DBC_LEN = 4
-MODULO_VALUES = [ 10, 100, 1000, 10000, 10000, 1000000, 10000000, 100000000 ]
+VALID_TOKEN_LEN = 8
+MODULO_VALUES = [ 10**x for x in range(1,VALID_TOKEN_LEN) ]
 
 # Dynamic Truncate function, as per RFC4226
 def DT(hmac_hash):
@@ -20,24 +21,22 @@ def DT(hmac_hash):
     # extract the lower 4 bits from the last byte
     offset = hmac_hash[-1] & 0xf
     # extract 4 bytes from hmac_hash starting from offset
-    dbc_array = [ hmac_hash[i] for i in range(offset, offset + DBC_LEN) ]
-    # mask the first byte, discart most significant bit
-    dbc_array[0] &= 0x7f
+    dbc = hmac_hash[offset:offset + DBC_LEN]
 
     # assemble 4 bytes Dynamic Binary Code
-    return bytes(dbc_array)
+    return struct.unpack(">I", dbc)[0] & 0x7fffffff
 
 # compute modulo of byte value
-def modulo(byte_string, exponent=6):
+def modulo(byte_string, token_len=6):
     # generate 6 digit HOTP code
     # (32bit value) mod 10^x where x is the code length
-    mv = MODULO_VALUES[exponent - 1]
+    # modulo
+    mv = MODULO_VALUES[token_len - 1]
 
-    # unpack 4 bytes value into a 32bit integer
-    # unpack returns a tuple, get first value
-    bv = struct.unpack("i", byte_string)[0]
+    # 4 bytes value
+    bv = byte_string
 
-    # return HOTP value!
+    # compute HOTP value!
     # value is an integer
     return int(bv % mv)
 
@@ -53,4 +52,4 @@ def HOTP(key, interval, digest=hashlib.sha1):
     hotp = DT(hmac_hash)
 
     # return hotp value
-    return hotp
+    return modulo(hotp)
