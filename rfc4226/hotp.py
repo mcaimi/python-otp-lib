@@ -31,6 +31,9 @@ def modulo(byte_string, token_len=6):
     # generate 6 digit HOTP code
     # (32bit value) mod 10^x where x is the code length
     # modulo
+    if (token_len < 0) or (token_len > VALID_TOKEN_LEN):
+        raise RuntimeError("Invalid token_len")
+
     mv = MODULO_VALUES[token_len - 1]
 
     # 4 bytes value
