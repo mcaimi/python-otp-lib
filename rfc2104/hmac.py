@@ -5,10 +5,6 @@
 #
 # import python libraries
 import hashlib as hashes
-try:
-    import six
-except ImportError as e:
-    raise e
 
 # constants
 BLOCK_LEN = 64  # bytes
@@ -46,7 +42,7 @@ def HMAC(key, message, digest_function=hashes.sha1):
 # convert a string into unicode bytes
 def str2unicode(message):
     # convert string to unicode if needed
-    if isinstance(message, six.string_types):
+    if isinstance(message, str):
         message = message.encode('UTF-8')
 
     return message
