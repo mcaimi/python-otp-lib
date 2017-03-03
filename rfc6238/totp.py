@@ -23,14 +23,14 @@ def normalize(key):
     return key.replace(' ', '') if isinstance(key, str) else key.replace(b' ', b'')
 
 # generate TOTP Token as per RFC 6238
-def TOTP(key, digest=hashlib.sha1, timestep=TS, encode_base32=True):
+def TOTP(key, digest=hashlib.sha1, timestep=TS, encode_base32=True, casefold=True):
     # normalize and convert key in proper format
     key = hmac.str2unicode(key)
     key = normalize(key)
 
     # google wants the key to be base32 encoded...
     if (encode_base32):
-        key = base64.b32decode(key)
+        key = base64.b32decode(key, casefold=casefold)
 
     # compute timestamp and convert value in unsigned 64 bit integer
     T0 = 0 # unix epoch
