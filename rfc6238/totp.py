@@ -9,6 +9,7 @@ from math import floor
 from datetime import datetime
 try:
     from rfc4226 import hotp
+    from rfc2104 import hmac
 except ImportError as e:
     raise e
 
@@ -22,6 +23,10 @@ def normalize(key):
 
 # generate TOTP Token as per RFC 6238
 def TOTP(key, digest=hashlib.sha1, timestep=TS):
+    # normalize and convert key in proper format
+    key = normalize(key)
+    key = hmac.str2unicode(key)
+
     # compute timestamp and convert value in unsigned 64 bit integer
     T0 = 0 # unix epoch
     now = floor((datetime.now().timestamp() - T0)/timestep)
@@ -30,7 +35,7 @@ def TOTP(key, digest=hashlib.sha1, timestep=TS):
     tc = struct.pack(">Q", now)
 
     # compute HOTP(key, TC)
-    totp_value = hotp.HOTP(normalize(key), tc)
+    totp_value = hotp.HOTP(key, tc)
 
     # return totp value
     return totp_value

@@ -45,6 +45,9 @@ def modulo(byte_string, token_len=6):
 
 # compute HOTP token as per RFC 4226
 def HOTP(key, interval, digest=hashlib.sha1):
+    # encode interval in unicode if needed
+    interval = hmac.str2unicode(interval)
+
     # encode interval as unsigned int
     interval = interval if (isinstance(interval, bytes)) else struct.pack(">Q", interval)
 
