@@ -1,5 +1,5 @@
 # Maintainer: Marco Caimi <marco.caimi@fastweb.it>
-_pkgname=fastwebotp
+_pkgname=otp-lib
 pkgname=python-${_pkgname}-git
 pkgver=0.1
 pkgrel=1
@@ -9,8 +9,8 @@ optdepends=()
 license=('GPL')
 arch=('any')
 
-_gitremote="git@mi-ber-vlgit01.dev.fastcloud.fwb:mcaimi/python-otp-lib.git"
-_gitpath="python-fastwebotp"
+_gitremote="https://github.com/mcaimi/python-otp-lib.git"
+_gitpath="python-${_pkgname}"
 
 build() {
   if [ -d $_gitpath ]; then
