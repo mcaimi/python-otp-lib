@@ -57,7 +57,7 @@ def TOTP(key, digest=hashlib.sha1, timestep=TS, timebase=0, encode_base32=True, 
     tc = struct.pack(">Q", now)
 
     # compute HOTP(key, TC)
-    totp_value = hotp.HOTP(key, tc)
+    totp_value = hotp.HOTP(key, tc, digest=digest)
 
     # return totp value
     return totp_value
