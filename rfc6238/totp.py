@@ -6,7 +6,7 @@
 import struct
 import hashlib
 from math import floor
-from datetime import datetime
+from time import time
 import base64
 try:
     from rfc4226 import hotp
@@ -51,7 +51,7 @@ def TOTP(key, digest=hashlib.sha1, timestep=TS, timebase=0, encode_base32=True, 
 
     # compute timestamp and convert value in unsigned 64 bit integer
     T0 = 0 # unix epoch in RFC, 0 in google implementation
-    now = floor((datetime.now().timestamp() - T0)/timestep)
+    now = floor((time() - T0)/timestep)
 
     # encode TC as unsigned 64bit integer
     tc = struct.pack(">Q", now)
