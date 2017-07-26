@@ -6,6 +6,7 @@
 # import python libraries
 import hashlib as hashes
 import six
+import struct
 
 # constants
 BLOCK_LEN = 64      # bytes
@@ -35,16 +36,28 @@ def HMAC(key, message, digest_function=hashes.sha1, unicode_convert=True):
     kl = len(key)
     pad = BLOCK_LEN - kl
     hmac_key = key if (kl <= BLOCK_LEN) else digest_function(key).digest()
-    key_plaintext_array = [ x for x in hmac_key ] + [ 0x00 for i in range(0, pad) ]
+    if not six.PY3:
+        hmac_key = six.iterbytes(hmac_key)
+        message = six.iterbytes(message)
+    key_plaintext_array = ([ x for x in hmac_key ] + [ 0x00 for i in range(0, pad) ])
 
     # compute inner element and hash
     inner_cyphertext = [ x ^ INNER_PAD for x in key_plaintext_array ]
-    inner_element = bytes(inner_cyphertext) + message
+    if not six.PY3:
+        inner_element = [ six.int2byte(x) for x in inner_cyphertext ] + [ six.int2byte(y) for y in message ]
+        inner_element = ''.join(map(str, inner_element))
+    else:
+        inner_element = bytes(inner_cyphertext) + message
+    # calculate inner hmac
     inner_hmac = digest_function(inner_element).digest()
 
     # compute outer element and hash
-    outer_cypertext = [ x ^ OUTER_PAD for x in key_plaintext_array ]
-    outer_element = bytes(outer_cypertext) + inner_hmac
+    outer_cyphertext = [ x ^ OUTER_PAD for x in key_plaintext_array ]
+    if not six.PY3:
+        outer_element = [ six.int2byte(x) for x in outer_cyphertext ] + [ six.b(str(inner_hmac)) ]
+        outer_element = ''.join(map(str, outer_element))
+    else:
+        outer_element = bytes(outer_cyphertext) + inner_hmac
     hmac = digest_function(outer_element).digest()
 
     # return computed HMAC
@@ -57,13 +70,13 @@ def HMAC(key, message, digest_function=hashes.sha1, unicode_convert=True):
 
     message: string to be checked and converted
 
+    output is always a string of BYTES.
+
 """
 def str2unicode(message):
     # convert string to unicode if needed
-    if (six.PY3 and isinstance(message, str)):
-        message = message.encode('UTF-8')
-    elif (six.PY2 and isinstance(message,str)):
-        message = bytearray(message, 'utf8')
+    if isinstance(message, six.string_types):
+        message = message.encode('UTF-8') if six.PY3 else six.b(str(message))
 
     return message
 
@@ -76,8 +89,8 @@ def str2unicode(message):
     delimitier: delimiter character between hash digits. defaults is NUL
 """
 def hmac_to_string(hmac, delimiter=""):
-    if (isinstance(hmac, bytes)):
-        return delimiter.join(["%02x" % (x) for x in hmac])
+    if (isinstance(hmac, six.binary_type)):
+        return delimiter.join(["%02x" % (x) for x in hmac]) if six.PY3 else delimiter.join(["%02x" % ord(x) for x in hmac])
     else:
         raise TypeError("hmac.hmac_to_string(): Incorrect input type. Expected [bytes], got [%s]" % hmac.__class__)
 
@@ -90,10 +103,10 @@ def hmac_to_string(hmac, delimiter=""):
     delimiter: hex values delimiter. default is NUL
 """
 def string_to_hmac(str_hmac, delimiter=""):
-    if (isinstance(str_hmac, str)):
+    if (isinstance(str_hmac, six.string_types)):
         # remove delimiters if any
         if delimiter is not "":
-            str_hmac = ''.join(str_hmac.split(delimiter))
+            str_hmac = ''.join(str_hmac.split(delimiter)) if six.PY3 else ''.join(map(str, str_hmac.split(delimiter)))
         # rebuild bytestring
         return bytes([ x for x in [ int(str_hmac[y:y+2], 16) for y in range(0, len(str_hmac), 2)] ])
     else:

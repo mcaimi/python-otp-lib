@@ -4,6 +4,7 @@
 #
 import hashlib
 import math
+import six
 import struct
 try:
     from rfc2104 import hmac
@@ -24,12 +25,13 @@ MODULO_VALUES = [ 10**x for x in range(1,VALID_TOKEN_LEN) ]
     hmac_hash: HMAC byte string
 """
 def DT(hmac_hash):
-    if not isinstance(hmac_hash, bytes):
+    if not isinstance(hmac_hash, six.binary_type):
         raise RuntimeError("hotp.DT(): Invalid HMAC hash. Expected [bytes], got [%s] instead." % type(hmac_hash))
 
     # compute dynamic binary code
     # extract the lower 4 bits from the last byte
-    offset = hmac_hash[-1] & 0xf
+    print(hmac_hash.__class__)
+    offset = (hmac_hash[-1] & 0xf) if six.PY3 else (ord(hmac_hash[-1]) & 0xf)
     # extract 4 bytes from hmac_hash starting from offset
     dbc = hmac_hash[offset:offset + DBC_LEN]
 
