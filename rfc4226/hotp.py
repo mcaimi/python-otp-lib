@@ -30,7 +30,6 @@ def DT(hmac_hash):
 
     # compute dynamic binary code
     # extract the lower 4 bits from the last byte
-    print(hmac_hash.__class__)
     offset = (hmac_hash[-1] & 0xf) if six.PY3 else (ord(hmac_hash[-1]) & 0xf)
     # extract 4 bytes from hmac_hash starting from offset
     dbc = hmac_hash[offset:offset + DBC_LEN]

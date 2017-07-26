@@ -5,6 +5,8 @@
 #
 import struct
 import hashlib
+import six
+import os
 from math import floor
 from time import time
 import base64
@@ -61,4 +63,21 @@ def TOTP(key, digest=hashlib.sha1, timestep=TS, timebase=0, encode_base32=True, 
 
     # return totp value
     return totp_value
+
+
+"""
+    get_random_base32_key(byte_len, digest)
+
+    generates a new random base32-encoded key that can be used to generate TOTP codes.
+
+    byte_len: how many random bytes to read from /dev/urandom
+    digest: hash function to apply to the random bytearray before conversion
+"""
+def get_random_base32_key(byte_key=32, digest=hashlib.sha1):
+    if six.PY3:
+        random_b32 = base64.b32encode(digest(os.urandom(byte_len)).digest())
+    else:
+        random_b32 = six.b(str(base64.b32encode(digest(os.urandom(byte_len)).digest())))
+
+    return random_b32
 
