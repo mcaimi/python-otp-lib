@@ -48,7 +48,7 @@ def normalize(key):
     encode_base32: if True the key is base32 encoded (Google auth), otherwise the key is left as is. default is True
     casefold: if True, base32 conversion is case-insensitive. defaults to True
 """
-def TOTP(key, digest=hashlib.sha1, timestep=TS, timebase=0, encode_base32=True, casefold=True):
+def TOTP(key, digest=hashlib.sha1, timestep=TS, timebase=0, encode_base32=True, casefold=True, token_len=6):
     # normalize and convert key in proper format
     key = hmac.str2unicode(key)
     key = normalize(key)
@@ -66,6 +66,12 @@ def TOTP(key, digest=hashlib.sha1, timestep=TS, timebase=0, encode_base32=True, 
 
     # compute HOTP(key, TC)
     totp_value = hotp.HOTP(key, tc, digest=digest)
+
+    # HOTP result is an integer resulting from a modulo operation: check for result length
+    # if less than 'token_len', left-pad with zeroes
+    l = len(str(totp_value))
+    if (l < token_len):
+        totp_value = '0' * (token_len - l) + str(totp_value)
 
     # return totp value
     return totp_value
