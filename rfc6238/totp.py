@@ -23,8 +23,10 @@ except ImportError:
     from urllib import quote, urlencode
 
 # time step
-# seconds, default value as per Google implementation
+# seconds, default value
 TS = 30
+# initial time. default is unix epoch
+EPOCH = 0 # gmtime(0) or Midnight 1 Jan 1970
 
 # strip whitespaces from key if any is present
 """
@@ -36,6 +38,18 @@ TS = 30
 def normalize(key):
     return key.replace(' ', '') if isinstance(key, str) else key.replace(b' ', b'')
 
+# decode a base32 secret
+"""
+    base32_decode(key):
+        decode a base32 encoded secret. 
+        Ensure that the key is properly padded before calling b32decode
+
+    key: secret string to be processed.
+"""
+def base32_decode(key):
+    padded_secret = key + b'=' * (8 - len(key)%8)
+    return base64.b32decode(padded_secret)
+
 # generate TOTP Token as per RFC 6238
 """
     TOTP(key, digest, timestep, timebase, encode_base32, casefold):
@@ -43,29 +57,34 @@ def normalize(key):
 
     key: shared secret. Input is a string, it is converted to UTF-8 bytestring automatically
     digest: hash to be used. by default SHA-1 is employed
+    timecounter: point in time from epoch for which you want to compute the TOTP. (default is time.time())
     timestep: TOTP token period. default is 30 sec (Google Auth compatibility value)
-    timebase: point in time from which we compute the timestamp in microseconds. default is 0
+    timebase: point in time from which we compute the timestamp in microseconds. default is EPOCH
     encode_base32: if True the key is base32 encoded (Google auth), otherwise the key is left as is. default is True
     casefold: if True, base32 conversion is case-insensitive. defaults to True
 """
-def TOTP(key, digest=hashlib.sha1, timestep=TS, timebase=0, encode_base32=True, casefold=True, token_len=6):
+def TOTP(key, timecounter=0, digest=hashlib.sha1, timestep=TS, timebase=EPOCH, encode_base32=True, casefold=True, token_len=6):
     # normalize and convert key in proper format
-    key = hmac.str2unicode(key)
     key = normalize(key)
+    key = hmac.str2unicode(key)
 
     # google wants the key to be base32 encoded...
+    # additionally google authenticator does not use T0/TI
     if (encode_base32):
-        key = base64.b32decode(key, casefold=casefold)
+        key = base32_decode(key)
 
     # compute timestamp and convert value in unsigned 64 bit integer
-    T0 = 0 # unix epoch in RFC, 0 in google implementation
-    now = floor((time() - T0)/timestep)
+    T0 = timebase # unix epoch in RFC
+    if timecounter==0:
+        now = floor(float(time() - T0)/timestep)
+    else:
+        now = floor(timecounter/timestep)
 
     # encode TC as unsigned 64bit integer
     tc = struct.pack(">Q", now)
 
     # compute HOTP(key, TC)
-    totp_value = hotp.HOTP(key, tc, digest=digest)
+    totp_value = hotp.HOTP(key, tc, digest=digest, token_len=token_len)
 
     # HOTP result is an integer resulting from a modulo operation: check for result length
     # if less than 'token_len', left-pad with zeroes
