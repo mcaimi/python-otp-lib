@@ -14,7 +14,7 @@ except ImportError as e:
 # constants
 DBC_LEN = 4     # bytes, dynamic binary code is 4 bytes per RFC
 VALID_TOKEN_LEN = 8     # accept codes up to 8 characters
-MODULO_VALUES = [ 10**x for x in range(1,VALID_TOKEN_LEN) ]
+MODULO_VALUES = [ 10**x for x in range(1,VALID_TOKEN_LEN+1) ]
 
 # Dynamic Truncate function, as per RFC4226
 """
@@ -73,7 +73,7 @@ def modulo(unsigned_int_value, token_len=6):
     interval: 64bit unsigned integer value (network-format encoded)
     digest: hash algorithm to use when calculating the HMAC hash. default is SHA-1
 """
-def HOTP(key, interval, digest=hashlib.sha1):
+def HOTP(key, interval, digest=hashlib.sha1, token_len=6):
     # encode interval in unicode if needed
     interval = hmac.str2unicode(interval)
 
@@ -90,4 +90,4 @@ def HOTP(key, interval, digest=hashlib.sha1):
         raise dt_exe
 
     # return hotp value
-    return modulo(hotp)
+    return modulo(hotp, token_len=token_len)
