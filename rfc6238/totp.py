@@ -46,9 +46,12 @@ def normalize(key):
 
     key: secret string to be processed.
 """
-def base32_decode(key):
-    padded_secret = key + b'=' * (8 - len(key)%8)
-    return base64.b32decode(padded_secret)
+def base32_decode(key, casefold=True):
+    if isinstance(key, str):
+        padded_secret = hmac.str2unicode(key) + b'=' * (len(key)%8)
+    else:
+        padded_secret = key + b'=' * (len(key)%8)
+    return base64.b32decode(padded_secret, casefold=casefold)
 
 # generate TOTP Token as per RFC 6238
 """
@@ -66,12 +69,12 @@ def base32_decode(key):
 def TOTP(key, timecounter=0, digest=hashlib.sha1, timestep=TS, timebase=EPOCH, encode_base32=True, casefold=True, token_len=6):
     # normalize and convert key in proper format
     key = normalize(key)
+    # convert to unicode bytestring
     key = hmac.str2unicode(key)
 
     # google wants the key to be base32 encoded...
-    # additionally google authenticator does not use T0/TI
     if (encode_base32):
-        key = base32_decode(key)
+        key = base32_decode(key, casefold=casefold)
 
     # compute timestamp and convert value in unsigned 64 bit integer
     T0 = timebase # unix epoch in RFC
