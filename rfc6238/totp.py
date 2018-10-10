@@ -48,9 +48,10 @@ def normalize(key):
 """
 def base32_decode(key, casefold=True):
     if isinstance(key, str):
-        padded_secret = hmac.str2unicode(key) + b'=' * (len(key)%8)
+        padded_secret = hmac.str2unicode(key + '=' * (8 - len(key)%8))
     else:
-        padded_secret = key + b'=' * (len(key)%8)
+        padded_secret = key + b'=' * (8 - len(key)%8)
+    print(padded_secret)
     return base64.b32decode(padded_secret, casefold=casefold)
 
 # generate TOTP Token as per RFC 6238
