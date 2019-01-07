@@ -138,9 +138,9 @@ def get_random_base32_key(byte_key=32, digest=hashlib.sha1):
 
 def build_uri(secret, name, issuer_name=None, digest=None, digits=None, period=None):
     # Handling values different from defaults
-    chosen_digest = (digest is not None and digest != 'sha1')
-    token_length = (digits is not None and digits != 6)
-    token_ttl = (period is not None and period != 30)
+    chosen_digest = digest if (digest is not None and digest != 'sha1') else 'sha1'
+    token_length = digits if (digits is not None and digits != 6) else 6
+    token_ttl = period if (period is not None and period != 30) else 30
 
     # base OTP provisioning link structure
     base_uri = 'otpauth://{0}/{1}?{2}'
