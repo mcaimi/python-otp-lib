@@ -55,7 +55,6 @@ def base32_decode(key, casefold=True):
     if (padlen > 0):
         key += b'=' * (8 - padlen)
 
-    print(key)
     return base64.b32decode(key, casefold=casefold)
 
 # generate TOTP Token as per RFC 6238
