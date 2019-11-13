@@ -153,7 +153,7 @@ def build_uri(secret, name, issuer_name=None, digest=None, digits=None, period=N
         url_args['issuer'] = issuer_name
 
     if chosen_digest:
-        url_args['digest'] = digest.upper()
+        url_args['digest'] = chosen_digest.upper()
     if token_length:
         url_args['token_length'] = token_length
     if token_ttl:
