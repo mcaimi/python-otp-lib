@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 #
 #   HMAC generation library
-#   Marco Caimi <marco.caimi@fastweb.it>
+#   Marco Caimi <mcaimi@redhat.com>
 #
 # import python libraries
 import hashlib as hashes

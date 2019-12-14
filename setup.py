@@ -7,8 +7,8 @@ setup(
         version="0.1",
         packages=find_packages(),
         author="Marco Caimi",
-        author_email="marco.caimi@fastweb.it",
+        author_email="mcaimi@redhat.com",
         description="A simple library that performs HOTP and TOTP token generation.",
         license="GPL v3",
-        url="http://mi-ber-vlgit01.dev.fastcloud.fwb/mcaimi/python-otp-lib.git"
+        url="https://github.com/mcaimi/python-otp-lib.git"
 )
