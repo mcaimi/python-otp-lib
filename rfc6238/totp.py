@@ -152,11 +152,11 @@ def build_uri(secret, name, issuer_name=None, digest=None, digits=None, period=N
         url_args['issuer'] = issuer_name
 
     if chosen_digest:
-        url_args['digest'] = chosen_digest.upper()
+        url_args['algorithm'] = chosen_digest.upper()
     if token_length:
-        url_args['token_length'] = token_length
+        url_args['digits'] = token_length
     if token_ttl:
-        url_args['token_ttl'] = token_ttl
+        url_args['period'] = token_ttl
 
     uri = base_uri.format('totp', label, urlencode(url_args).replace("+", "%20"))
     return uri
