@@ -5,6 +5,7 @@ pkgver=0.1
 pkgrel=1
 pkgdesc="Python package for generating HOTP and TOTP tokens."
 depends=('python')
+makedepends=('python-pytest')
 optdepends=()
 license=('GPL')
 arch=('any')
@@ -22,6 +23,10 @@ build() {
   msg "GIT pull complete, starting build..."
   cd $srcdir/$_gitpath
   python setup.py build
+
+  msg "Testing..."
+  cd $srcdir/$_gitpath
+  pytest
 }
 
 package() {
