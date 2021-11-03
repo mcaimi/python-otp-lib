@@ -4,7 +4,7 @@ from setuptools import setup, find_packages
 # install OTP modules
 setup(
         name="python-otp-lib",
-        version="0.1",
+        version="1.0",
         packages=find_packages(),
         author="Marco Caimi",
         author_email="mcaimi@redhat.com",
