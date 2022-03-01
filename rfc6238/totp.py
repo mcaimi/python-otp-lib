@@ -1,4 +1,6 @@
 #!/usr/bin/env python
+# pylint: disable=C0301
+# pylint: disable=R0913
 #
 """ TOTP Token Generation library (RFC6238)
 v0.1 - Marco Caimi <mcaimi@redhat.com> """
