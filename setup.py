@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+""" module setup """
 from setuptools import setup, find_packages
 
 # install OTP modules
