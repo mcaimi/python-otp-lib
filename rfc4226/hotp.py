@@ -1,7 +1,8 @@
 #!/usr/bin/env python
 #
-#   HOTP Token generation as per RFC4226
 #
+""" HOTP Token generation as per RFC4226 """
+
 import hashlib
 import struct
 from typing import AnyStr, Callable
@@ -13,21 +14,22 @@ except ImportError as e:
 # constants
 DBC_LEN: int = 4     # bytes, dynamic binary code is 4 bytes per RFC
 VALID_TOKEN_LEN: int = 8     # accept codes up to 8 characters
-MODULO_VALUES: list = [10**x for x in range(1, VALID_TOKEN_LEN+1)]
-
-"""
-    DT(hmac_hash)
-        runs the Dynamic Truncation function (see RFC) on the hmac_hash.
-        hmac_hash *must* be a bytestring object
-
-    hmac_hash:
-        HMAC byte string
-"""
+MODULO_VALUES: list = [10**x for x in range(1, VALID_TOKEN_LEN + 1)]
 
 
-def DT(hmac_hash: bytes) -> bytes:
+def dynamic_truncate(hmac_hash: bytes) -> bytes:
+    """
+        dynamic_truncate(hmac_hash)
+            runs the Dynamic Truncation function (see RFC) on the hmac_hash.
+            hmac_hash *must* be a bytestring object
+
+        hmac_hash:
+            HMAC byte string
+    """
+
     if not isinstance(hmac_hash, bytes):
-        raise RuntimeError("hotp.DT(): Invalid HMAC hash. Expected [bytes], got [%s] instead." % type(hmac_hash))
+        raise RuntimeError(f"hotp.DT(): Invalid HMAC hash.\
+                Expected [bytes], got [{type(hmac_hash)}] instead.")
 
     # compute dynamic binary code
     # extract the lower 4 bits from the last byte
@@ -40,55 +42,54 @@ def DT(hmac_hash: bytes) -> bytes:
     return struct.unpack(">I", dbc)[0] & 0x7fffffff
 
 
-"""
-    modulo(unsigned_int_value, token_len):
-        executes a modulo operation on the unsigned_int_value (which is 32 bit long),
-        extracting an integer value that has <token_len> cyphers
-
-    unsigned_int_value:
-        32 bits, input value for the modulo operation
-    token_len:
-        default len of the output value. default is 6 cypher long
-"""
-
-
 def modulo(unsigned_int_value: int, token_len: int = 6) -> int:
+    """
+        modulo(unsigned_int_value, token_len):
+            executes a modulo operation on the unsigned_int_value (which is 32 bit long),
+            extracting an integer value that has <token_len> cyphers
+
+        unsigned_int_value:
+            32 bits, input value for the modulo operation
+        token_len:
+            default len of the output value. default is 6 cypher long
+    """
+
     # generate 6 digit HOTP code
     # (32bit value) mod 10^x where x is the code length
     # modulo
     if (token_len < 0) or (token_len > VALID_TOKEN_LEN):
         raise RuntimeError("Invalid token_len")
 
-    if not(isinstance(unsigned_int_value, int)):
-        raise RuntimeError("Invalid integer value. Expected [int], got [%s]" % unsigned_int_value.__class__)
+    if not isinstance(unsigned_int_value, int):
+        raise RuntimeError(f"Invalid integer value.\
+                Expected [int], got [{unsigned_int_value.__class__}]")
 
     # determine modulo operands
-    mv = MODULO_VALUES[token_len - 1]
+    mod = MODULO_VALUES[token_len - 1]
 
     # 4 bytes value
-    bv = unsigned_int_value
+    byte_value = unsigned_int_value
 
     # compute HOTP value
     # value is an integer
-    return int(bv % mv)
+    return int(byte_value % mod)
 
 
-"""
-    HOTP(key, interval, digest)
-        computes an HOTP token from the (key, interval) pair supplied in input
+def hotp(key: AnyStr, interval: AnyStr, digest: Callable = hashlib.sha1, token_len: int = 6) -> int:
+    """
+        HOTP(key, interval, digest)
+            computes an HOTP token from the (key, interval) pair supplied in input
 
-    key:
-        shared secret, must be byte encoded (UTF-8)
-    interval:
-        64bit unsigned integer value (network-format encoded)
-    digest:
-        hash algorithm to use when calculating the HMAC hash. default is SHA-1
-    token_len:
-        length of the HMAC token
-"""
+        key:
+            shared secret, must be byte encoded (UTF-8)
+        interval:
+            64bit unsigned integer value (network-format encoded)
+        digest:
+            hash algorithm to use when calculating the HMAC hash. default is SHA-1
+        token_len:
+            length of the HMAC token
+    """
 
-
-def HOTP(key: AnyStr, interval: AnyStr, digest: Callable = hashlib.sha1, token_len: int = 6) -> int:
     if (token_len < 0) or (token_len > VALID_TOKEN_LEN):
         raise RuntimeError("Invalid token_len")
 
@@ -99,13 +100,13 @@ def HOTP(key: AnyStr, interval: AnyStr, digest: Callable = hashlib.sha1, token_l
     interval = interval if (isinstance(interval, bytes)) else struct.pack(">Q", interval)
 
     # compute HMAC-SHA-1 digest (20 bytes)
-    hmac_hash = hmac.HMAC(key, interval, digest_function=digest)
+    hmac_hash = hmac.hmac(key, interval, digest_function=digest)
 
     # compute Dynamic Truncation on the hmac value
     try:
-        hotp = DT(hmac_hash)
+        hotp_value = dynamic_truncate(hmac_hash)
     except RuntimeError as dt_exe:
         raise dt_exe
 
     # return hotp value
-    return modulo(hotp, token_len=token_len)
+    return modulo(hotp_value, token_len=token_len)
