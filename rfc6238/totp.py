@@ -130,7 +130,7 @@ def get_random_base32_key(byte_key: int = 32, digest: Callable = hashlib.sha1) -
     return base64.b32encode(digest(os.urandom(byte_key)).digest())
 
 
-def build_uri(secret: AnyStr, name: str, issuer_name: str = None, digest: str = None, digits: int = None, period: int = None) -> str:
+def build_uri(secret: AnyStr, name: str, issuer_name: str = None, digest: str = None, digits: int = None, period: int = TS) -> str:
     """
         Returns the provisioning URI for the OTP.
 
